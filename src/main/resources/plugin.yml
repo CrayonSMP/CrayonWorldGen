@@ -1,0 +1,9 @@
+name: CrayonWorldGen
+version: 1.0.0
+main: space.qouve.crayonworldgen.CrayonWorldGen
+api-version: 1.20
+depend: [WorldEdit]
+commands:
+  crayonworldgen:
+    description: Main command for CrayonWorldGen
+    permission: crayonworldgen.admin

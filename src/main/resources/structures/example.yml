@@ -1,0 +1,48 @@
+# ======================================================
+# CrayonWorldGen - Structure Configuration Example
+# ======================================================
+
+example_structure:
+  enabled: true
+  file: "example.schem"
+  rotation: "NONE" # NONE, CLOCKWISE_90, CLOCKWISE_180, COUNTERCLOCKWISE_90, RANDOM
+  chance: 0.05
+  attempts-per-chunk: 2
+  override-air: false
+
+  # Worlds where this specific structure is allowed to spawn
+  worlds:
+    - "world"
+    - "world_the_end"
+
+  # Biomes using NamespacedKeys
+  biomes:
+    - "minecraft:plains"
+    - "minecraft:cherry_grove"
+    - "minecraft:forest"
+
+  # Biome-specific configuration overrides (chance, override-air, attempts-per-chunk,
+  # and an optional "behaviors" list that overrides/extends global-behaviors for this biome).
+  # To change the Y-placement per biome, override the "highest-block" behavior's "offset"
+  # here instead of using a standalone y-offset field (there is none).
+  biome-configs:
+    "minecraft:plains":
+      chance: 0.1
+      behaviors:
+        - highest-block:
+            offset: -3
+    "minecraft:cherry_grove":
+      chance: 0.02
+
+  # Behaviors matching your structure requirements
+  global-behaviors:
+    highest-block:
+      offset: -3
+    ground-block:
+      materials: # allowed materials directly beneath the structure's origin
+        - "minecraft:sand"
+        - "minecraft:dirt"
+        - "minecraft:grass_block"
+    height:
+      min: 64 # inclusive minimum Y for the structure origin
+      max: 74 # inclusive maximum Y for the structure origin
