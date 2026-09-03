@@ -19,6 +19,7 @@ public final class WorldGenBehaviors {
         register("highest-block", new HighestBlockBehavior());
         register("patch-spawn", new PatchSpawnBehavior());
         register("sky-structure", new SkyStructureBehavior());
+        register("flat-surface", new FlatSurfaceBehavior());
     }
 
     private WorldGenBehaviors() {
