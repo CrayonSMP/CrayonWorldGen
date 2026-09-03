@@ -20,6 +20,7 @@ public final class WorldGenBehaviors {
         register("patch-spawn", new PatchSpawnBehavior());
         register("sky-structure", new SkyStructureBehavior());
         register("flat-surface", new FlatSurfaceBehavior());
+        register("water-avoid", new WaterAvoidanceBehavior());
     }
 
     private WorldGenBehaviors() {

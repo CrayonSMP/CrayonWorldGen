@@ -16,6 +16,7 @@ import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.math.transform.AffineTransform;
+import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.session.ClipboardHolder;
 import com.sk89q.worldedit.world.block.BlockState;
 import com.sk89q.worldedit.world.block.BlockTypes;
@@ -51,10 +52,26 @@ public final class WorldEditUtil {
         com.sk89q.worldedit.world.World adapterWorld = BukkitAdapter.adapt(world);
 
         try (EditSession editSession = WorldEdit.getInstance().newEditSession(adapterWorld)) {
-            ClipboardHolder holder = new ClipboardHolder(clipboard);
+            // 1. Berechne den echten geometrischen Mittelpunkt der Unterseite
+            Region region = clipboard.getRegion();
+            BlockVector3 min = region.getMinimumPoint();
+            BlockVector3 max = region.getMaximumPoint();
 
+            int centerX = (min.x() + max.x()) / 2;
+            int centerZ = (min.z() + max.z()) / 2;
+            int bottomY = min.y();
+
+            BlockVector3 bottomCenter = BlockVector3.at(centerX, bottomY, centerZ);
+
+            // 2. Setze den internen Origin des Clipboards auf die untere Mitte.
+            // Dadurch wird dieser Punkt als Anker für Rotationen und Pasting verwendet.
+            clipboard.setOrigin(bottomCenter);
+
+            ClipboardHolder holder = new ClipboardHolder(clipboard);
+            AffineTransform transform = new AffineTransform();
+
+            // 3. Wende ausschließlich die Rotation an (die jetzt sauber um den neuen Origin rotiert)
             if (rotation != null && rotation != SchematicRotation.NONE) {
-                AffineTransform transform = new AffineTransform();
                 double degrees = switch (rotation) {
                     case CLOCKWISE_90 -> 90;
                     case CLOCKWISE_180 -> 180;
@@ -63,8 +80,9 @@ public final class WorldEditUtil {
                     default -> 0;
                 };
                 transform = transform.rotateY(degrees);
-                holder.setTransform(transform);
             }
+
+            holder.setTransform(transform);
 
             Mask ignoreBarriers = Masks.negate(new BlockTypeMask(clipboard, BlockTypes.BARRIER, BlockTypes.STRUCTURE_VOID));
 

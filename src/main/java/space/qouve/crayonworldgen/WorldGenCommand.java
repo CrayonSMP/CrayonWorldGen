@@ -1,5 +1,6 @@
 package space.qouve.crayonworldgen;
 
+import com.sk89q.worldedit.math.BlockVector3;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -12,6 +13,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import space.qouve.crayonworldgen.models.PendingSpawn;
+import space.qouve.crayonworldgen.models.WorldGenConfig;
 
 import java.util.Arrays;
 import java.util.List;
@@ -21,9 +24,11 @@ import java.util.stream.Collectors;
 public class WorldGenCommand implements CommandExecutor, TabCompleter {
 
     private final CrayonWorldGen plugin;
+    private final StructureSpawnProcessor spawnProcessor;
 
     public WorldGenCommand(CrayonWorldGen plugin) {
         this.plugin = plugin;
+        this.spawnProcessor = new StructureSpawnProcessor(plugin);
     }
 
     @Override
@@ -62,11 +67,42 @@ public class WorldGenCommand implements CommandExecutor, TabCompleter {
                 }
                 handleLocate(player, args[1]);
             }
+            case "spawn" -> {
+                if (!(sender instanceof Player player)) {
+                    sender.sendMessage(Component.text("This command can only be used by players.", NamedTextColor.RED));
+                    return true;
+                }
+                if (args.length < 2) {
+                    player.sendMessage(Component.text("Usage: /crayonworldgen spawn <structure_id>", NamedTextColor.YELLOW));
+                    return true;
+                }
+                handleSpawn(player, args[1]);
+            }
             case "debug" -> handleDebug(sender);
             default -> sendHelp(sender);
         }
 
         return true;
+    }
+
+    private void handleSpawn(Player player, String structureId) {
+        // Holen der Struktur-Konfiguration aus dem Service
+        WorldGenConfig config = plugin.getService().getConfigs().get(structureId);
+        if (config == null) {
+            player.sendMessage(Component.text("Structure '" + structureId + "' not found.", NamedTextColor.RED));
+            return;
+        }
+
+        Location playerLoc = player.getLocation();
+        BlockVector3 pos = BlockVector3.at(playerLoc.getBlockX(), playerLoc.getBlockY(), playerLoc.getBlockZ());
+
+        // Erstelle PendingSpawn genau so wie im Generator
+        PendingSpawn spawn = new PendingSpawn(player.getWorld().getName(), pos, config);
+
+        // Nutze den bestehenden StructureSpawnProcessor
+        spawnProcessor.processSpawn(spawn);
+
+        player.sendMessage(Component.text("Processed spawn command for '" + structureId + "' at your position.", NamedTextColor.GREEN));
     }
 
     private void handleList(CommandSender sender) {
@@ -86,7 +122,7 @@ public class WorldGenCommand implements CommandExecutor, TabCompleter {
             Component entry = Component.text("• ", NamedTextColor.DARK_GRAY)
                     .append(Component.text(id, NamedTextColor.GREEN))
                     .hoverEvent(HoverEvent.showText(Component.text(configDetails, NamedTextColor.LIGHT_PURPLE)))
-                    .clickEvent(ClickEvent.suggestCommand("/crayonworldgen info " + id));
+                    .clickEvent(ClickEvent.suggestCommand("/crayonworldgen spawn " + id));
 
             sender.sendMessage(entry);
         }
@@ -142,6 +178,7 @@ public class WorldGenCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(Component.text("--- CrayonWorldGen Admin Commands ---", NamedTextColor.GOLD));
         sender.sendMessage(Component.text("/crayonworldgen reload ", NamedTextColor.YELLOW).append(Component.text("- Reload configurations", NamedTextColor.GRAY)));
         sender.sendMessage(Component.text("/crayonworldgen list ", NamedTextColor.YELLOW).append(Component.text("- List structures with hover info", NamedTextColor.GRAY)));
+        sender.sendMessage(Component.text("/crayonworldgen spawn <id> ", NamedTextColor.YELLOW).append(Component.text("- Force-spawn a structure at your position", NamedTextColor.GRAY)));
         sender.sendMessage(Component.text("/crayonworldgen info <id> ", NamedTextColor.YELLOW).append(Component.text("- View structure config details", NamedTextColor.GRAY)));
         sender.sendMessage(Component.text("/crayonworldgen locate <id> ", NamedTextColor.YELLOW).append(Component.text("- Find nearest structure location", NamedTextColor.GRAY)));
         sender.sendMessage(Component.text("/crayonworldgen debug ", NamedTextColor.YELLOW).append(Component.text("- View structure spawn metrics", NamedTextColor.GRAY)));
@@ -154,10 +191,10 @@ public class WorldGenCommand implements CommandExecutor, TabCompleter {
         }
 
         if (args.length == 1) {
-            return filterCompletions(Arrays.asList("reload", "list", "info", "locate", "debug"), args[0]);
+            return filterCompletions(Arrays.asList("reload", "list", "spawn", "info", "locate", "debug"), args[0]);
         }
 
-        if (args.length == 2 && (args[0].equalsIgnoreCase("info") || args[0].equalsIgnoreCase("locate"))) {
+        if (args.length == 2 && (args[0].equalsIgnoreCase("info") || args[0].equalsIgnoreCase("locate") || args[0].equalsIgnoreCase("spawn"))) {
             return filterCompletions(plugin.getService().getRegisteredStructures(), args[1]);
         }
 

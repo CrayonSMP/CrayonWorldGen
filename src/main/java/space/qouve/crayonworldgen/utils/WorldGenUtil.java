@@ -3,7 +3,6 @@ package space.qouve.crayonworldgen.utils;
 import com.sk89q.worldedit.math.BlockVector3;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
-import org.bukkit.block.structure.StructureRotation;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.persistence.PersistentDataContainer;
