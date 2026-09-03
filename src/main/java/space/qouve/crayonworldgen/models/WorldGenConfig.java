@@ -10,7 +10,7 @@ import java.util.Map;
 public record WorldGenConfig(
         String structureKey,
         File schematicFile,
-        StructureRotation rotation,
+        SchematicRotation rotation,
         double chance,
         List<String> worlds,
         List<String> biomes,

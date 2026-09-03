@@ -6,6 +6,7 @@ import com.sk89q.worldedit.math.BlockVector3;
 import org.bukkit.World;
 import org.bukkit.block.structure.StructureRotation;
 import org.bukkit.configuration.ConfigurationSection;
+import space.qouve.crayonworldgen.models.SchematicRotation;
 import space.qouve.crayonworldgen.models.WorldGenBehavior;
 import space.qouve.crayonworldgen.models.WorldGenBehaviors;
 import space.qouve.crayonworldgen.models.WorldGenContext;
@@ -78,9 +79,9 @@ public class PatchSpawnBehavior implements WorldGenBehavior {
             try {
                 Clipboard clipboard = WorldEditUtil.loadSchematic(file);
 
-                StructureRotation rotation = StructureRotation.NONE;
+                SchematicRotation rotation = SchematicRotation.NONE;
                 if (randomRotation) {
-                    StructureRotation[] rotations = StructureRotation.values();
+                    SchematicRotation[] rotations = SchematicRotation.values();
                     rotation = rotations[ThreadLocalRandom.current().nextInt(rotations.length)];
                 }
 

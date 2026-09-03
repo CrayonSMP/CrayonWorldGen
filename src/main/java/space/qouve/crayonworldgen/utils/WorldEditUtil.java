@@ -20,10 +20,12 @@ import com.sk89q.worldedit.session.ClipboardHolder;
 import com.sk89q.worldedit.world.block.BlockState;
 import com.sk89q.worldedit.world.block.BlockTypes;
 import org.bukkit.World;
+import space.qouve.crayonworldgen.models.SchematicRotation;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Utility wrapper for WorldEdit clipboard loading and placement operations.
@@ -45,18 +47,19 @@ public final class WorldEditUtil {
     }
 
     public static Extent pasteSchematic(World world, Clipboard clipboard, BlockVector3 position,
-                                        org.bukkit.block.structure.StructureRotation rotation, boolean ignoreAir) {
+                                        SchematicRotation rotation, boolean ignoreAir) {
         com.sk89q.worldedit.world.World adapterWorld = BukkitAdapter.adapt(world);
 
         try (EditSession editSession = WorldEdit.getInstance().newEditSession(adapterWorld)) {
             ClipboardHolder holder = new ClipboardHolder(clipboard);
 
-            if (rotation != null && rotation != org.bukkit.block.structure.StructureRotation.NONE) {
+            if (rotation != null && rotation != SchematicRotation.NONE) {
                 AffineTransform transform = new AffineTransform();
                 double degrees = switch (rotation) {
                     case CLOCKWISE_90 -> 90;
                     case CLOCKWISE_180 -> 180;
                     case COUNTERCLOCKWISE_90 -> 270;
+                    case RANDOM -> ThreadLocalRandom.current().nextInt(0, 4) * 90;
                     default -> 0;
                 };
                 transform = transform.rotateY(degrees);

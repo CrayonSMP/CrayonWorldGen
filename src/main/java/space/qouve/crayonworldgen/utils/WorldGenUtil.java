@@ -9,10 +9,7 @@ import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import space.qouve.crayonworldgen.CrayonWorldGen;
-import space.qouve.crayonworldgen.models.BiomeConfig;
-import space.qouve.crayonworldgen.models.StructureRecord;
-import space.qouve.crayonworldgen.models.WorldGenBehavior;
-import space.qouve.crayonworldgen.models.WorldGenConfig;
+import space.qouve.crayonworldgen.models.*;
 
 import java.io.File;
 import java.util.*;
@@ -26,8 +23,8 @@ public final class WorldGenUtil {
     private WorldGenUtil() {
     }
 
-    public static StructureRotation getRandomRotation() {
-        StructureRotation[] rotations = StructureRotation.values();
+    public static SchematicRotation getRandomRotation() {
+        SchematicRotation[] rotations = SchematicRotation.values();
         return rotations[ThreadLocalRandom.current().nextInt(rotations.length)];
     }
 
@@ -54,15 +51,12 @@ public final class WorldGenUtil {
         int attemptsPerChunk = Math.max(1, section.getInt("attempts-per-chunk", 4));
 
         String rotationStr = section.getString("rotation", "NONE").toUpperCase();
-        StructureRotation rotation;
-        if ("RANDOM".equals(rotationStr)) {
-            rotation = getRandomRotation();
-        } else {
-            try {
-                rotation = StructureRotation.valueOf(rotationStr);
-            } catch (IllegalArgumentException e) {
-                rotation = StructureRotation.NONE;
-            }
+        SchematicRotation rotation;
+
+        try {
+            rotation = SchematicRotation.valueOf(rotationStr);
+        } catch (IllegalArgumentException e) {
+            rotation = SchematicRotation.NONE;
         }
 
         Map<WorldGenBehavior, ConfigurationSection> globalBehaviors = parseBehaviorList(
